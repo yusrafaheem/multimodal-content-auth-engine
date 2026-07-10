@@ -1,0 +1,5 @@
+# Optional: enables the ViT/CLIP-backed detector paths (app/config.py
+# USE_PRETRAINED_MODELS=1). Downloads ~1-2GB of model weights on first run.
+# Install with: pip install -r requirements.txt -r requirements-ml.txt
+torch==2.4.1
+transformers==4.44.2
