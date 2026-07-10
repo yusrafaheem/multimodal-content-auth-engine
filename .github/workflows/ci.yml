@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install lightweight deps (no torch/transformers, keeps CI fast)
+        run: |
+          pip install fastapi uvicorn python-multipart pydantic pillow numpy opencv-python-headless pytest httpx
+      - name: Run tests (heuristic-only mode)
+        env:
+          USE_PRETRAINED_MODELS: "0"
+        run: pytest tests/ -v
+      - name: Run benchmark harness smoke test
+        run: python -m benchmarking.run_benchmark --n-per-category 5
