@@ -98,6 +98,16 @@ class UnifiedVerdictTests(unittest.TestCase):
     def _detector_result(self, score=0.8):
         return DetectorResult(score=score, label="authentic", method="test")
 
+    def test_image_text_metadata_default_to_none(self):
+        # Constructing a UnifiedVerdict for, say, a text-only submission
+        # (no image or metadata detector run) should be possible without
+        # passing image=None/metadata=None explicitly -- they need real
+        # defaults, not to be silently-required fields.
+        verdict = UnifiedVerdict(verdict="authentic", unified_score=0.9, explanation="clean")
+        self.assertIsNone(verdict.image)
+        self.assertIsNone(verdict.text)
+        self.assertIsNone(verdict.metadata)
+
     def test_nested_detector_results_round_trip_through_model_dump(self):
         # UnifiedVerdict.image/text/metadata are typed as Optional[DetectorResult]
         # -- confirms model_dump() recurses into those nested models rather
