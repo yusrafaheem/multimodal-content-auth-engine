@@ -54,5 +54,20 @@ class HealthEndpointTests(unittest.TestCase):
         self.assertEqual(resp.headers.get("access-control-allow-origin"), "*")
 
 
+class ImageEndpointTests(unittest.TestCase):
+    def test_clean_image_scores_above_the_suspicious_threshold(self):
+        # HTTP-layer confirmation of what test_image_detector.py already
+        # checks in-process: a clean fixture uploaded as a real multipart
+        # file, through FastAPI's own request parsing, should still score
+        # above settings.suspicious_threshold and be labeled with the
+        # heuristic method name (no ML deps installed in this environment).
+        fixture = make_clean_fixture(seed=21)
+        resp = client.post("/v1/authenticate/image", files=_upload(fixture))
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertGreaterEqual(body["score"], 0.6)
+        self.assertEqual(body["method"], "heuristic_ela_noise_residual")
+
+
 if __name__ == "__main__":
     unittest.main()
