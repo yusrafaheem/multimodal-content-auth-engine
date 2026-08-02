@@ -61,5 +61,19 @@ class SettingsDefaultsTests(unittest.TestCase):
         self.assertGreater(s.suspicious_threshold, s.fake_threshold)
 
 
+class SettingsMutableDefaultTests(unittest.TestCase):
+    def test_weights_dict_uses_a_fresh_object_per_instance(self):
+        # `weights` is declared with field(default_factory=lambda: {...}) --
+        # if it had instead been a plain `= {...}` default (the classic
+        # Python mutable-default-argument footgun), every Settings()
+        # instance would share and silently mutate the SAME dict object.
+        # This test would fail loudly if that regression were introduced.
+        a = config_module.Settings()
+        b = config_module.Settings()
+        a.weights["image"] = 0.99
+        self.assertNotEqual(b.weights["image"], 0.99)
+        self.assertEqual(b.weights["image"], 0.5)
+
+
 if __name__ == "__main__":
     unittest.main()
