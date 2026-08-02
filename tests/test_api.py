@@ -23,7 +23,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from benchmarking.attack_fixtures import make_clean_fixture
+from benchmarking.attack_fixtures import make_clean_fixture, make_metadata_spoofed_fixture
 
 # raise_server_exceptions=False: a later test in this file deliberately sends
 # input the app doesn't handle gracefully -- the point is to observe the HTTP
@@ -75,6 +75,22 @@ class ImageEndpointTests(unittest.TestCase):
         # that should reach the route handler and blow up as a 500.
         resp = client.post("/v1/authenticate/image")
         self.assertEqual(resp.status_code, 422)
+
+
+class MetadataEndpointTests(unittest.TestCase):
+    def test_spoofed_metadata_is_flagged_with_a_specific_finding(self):
+        # HTTP-layer regression test for metadata_detector.py's EXIF
+        # rule-based checks, run through the real /v1/authenticate/metadata
+        # route rather than calling the detector directly. Confirms both
+        # the low score AND that the specific finding name survives request
+        # parsing + response serialization intact -- not just a generic
+        # "something's wrong" signal.
+        fixture = make_metadata_spoofed_fixture(seed=21)
+        resp = client.post("/v1/authenticate/metadata", files=_upload(fixture))
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertLess(body["score"], 0.6)
+        self.assertIn("modify_date_before_original_date", body["details"]["findings"])
 
 
 if __name__ == "__main__":
