@@ -132,6 +132,13 @@ class TextEndpointTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["method"], "heuristic_text_stats")
 
+    def test_missing_required_text_field_is_a_422(self):
+        # Mirror of the missing-file test for the image endpoint: a
+        # required Form(...) field with nothing supplied should fail
+        # FastAPI's own validation before reaching the route handler.
+        resp = client.post("/v1/authenticate/text")
+        self.assertEqual(resp.status_code, 422)
+
 
 class GarbageInputTests(unittest.TestCase):
     """None of the three single-modality endpoints wrap `load_image()` in a
