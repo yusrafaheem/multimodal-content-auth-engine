@@ -139,6 +139,16 @@ class TextEndpointTests(unittest.TestCase):
         resp = client.post("/v1/authenticate/text")
         self.assertEqual(resp.status_code, 422)
 
+    def test_short_text_is_labeled_insufficient_over_http_same_as_in_process(self):
+        # text_detector.py's heuristic stats (burstiness, vocabulary
+        # richness) aren't meaningful on a handful of words -- the detector
+        # short-circuits to an "insufficient_text" label rather than
+        # producing a noisy, low-confidence score. Confirms that
+        # short-circuit survives the HTTP round trip, not just direct
+        # in-process calls.
+        resp = client.post("/v1/authenticate/text", data={"text": "Nice photo"})
+        self.assertEqual(resp.json()["label"], "insufficient_text")
+
 
 class GarbageInputTests(unittest.TestCase):
     """None of the three single-modality endpoints wrap `load_image()` in a
