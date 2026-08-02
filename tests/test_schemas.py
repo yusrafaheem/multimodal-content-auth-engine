@@ -40,6 +40,17 @@ class DetectorResultRequiredFieldsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(score=0.5, method="test")
 
+    def test_details_default_is_a_fresh_dict_per_instance_not_a_shared_one(self):
+        # Same class of bug as app/config.py's `weights` field (see
+        # test_config.py) -- if `details` were declared as a plain `= {}`
+        # default instead of Field(default_factory=dict), every
+        # DetectorResult built without an explicit `details` would share
+        # and silently mutate one dict object.
+        a = DetectorResult(score=0.5, label="uncertain", method="test")
+        b = DetectorResult(score=0.5, label="uncertain", method="test")
+        a.details["leaked"] = True
+        self.assertNotIn("leaked", b.details)
+
 
 if __name__ == "__main__":
     unittest.main()
