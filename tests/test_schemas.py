@@ -136,6 +136,14 @@ class UnifiedVerdictTests(unittest.TestCase):
 
 
 class HealthResponseTests(unittest.TestCase):
+    def test_requires_both_fields(self):
+        # /health's route handler always supplies both status and
+        # use_pretrained_models -- this pins down that HealthResponse
+        # itself would catch a future regression where one gets dropped,
+        # rather than silently serializing a half-populated response.
+        with self.assertRaises(ValidationError):
+            HealthResponse(status="ok")
+
     def test_pydantic_v2_lax_mode_coerces_common_boolean_like_strings(self):
         # Not a choice this codebase made deliberately -- it's Pydantic v2's
         # default (non-strict) behavior for a plain `bool` field: certain
