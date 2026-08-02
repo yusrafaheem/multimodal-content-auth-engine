@@ -26,6 +26,10 @@ class DetectorResultScoreBoundsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(score=-0.0001, label="authentic", method="test")
 
+    def test_score_above_one_is_rejected(self):
+        with self.assertRaises(ValidationError):
+            DetectorResult(score=1.0001, label="authentic", method="test")
+
 
 if __name__ == "__main__":
     unittest.main()
