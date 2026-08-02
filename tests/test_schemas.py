@@ -108,6 +108,15 @@ class UnifiedVerdictTests(unittest.TestCase):
         self.assertIsNone(verdict.text)
         self.assertIsNone(verdict.metadata)
 
+    def test_unified_score_is_bound_by_the_same_zero_to_one_range(self):
+        # unified_score is the weighted-average fusion output from
+        # consistency_pipeline.py -- it should carry the identical [0, 1]
+        # Field constraint as an individual DetectorResult.score, since it's
+        # meant to be directly comparable to suspicious_threshold /
+        # fake_threshold.
+        with self.assertRaises(ValidationError):
+            UnifiedVerdict(verdict="authentic", unified_score=1.5, explanation="clean")
+
     def test_nested_detector_results_round_trip_through_model_dump(self):
         # UnifiedVerdict.image/text/metadata are typed as Optional[DetectorResult]
         # -- confirms model_dump() recurses into those nested models rather
