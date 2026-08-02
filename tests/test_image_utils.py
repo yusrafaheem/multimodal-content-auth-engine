@@ -26,6 +26,13 @@ class LoadImageTests(unittest.TestCase):
         loaded = load_image(buf.getvalue())
         self.assertEqual(loaded.mode, "RGB")
 
+    def test_garbage_bytes_raise_rather_than_returning_a_blank_image(self):
+        # A silent "return something" here would be far more dangerous than
+        # an exception -- a caller could end up authenticating garbage input
+        # as if it were a real (blank/black) photo.
+        with self.assertRaises(Exception):
+            load_image(b"this is not an image, just some text bytes")
+
 
 if __name__ == "__main__":
     unittest.main()
