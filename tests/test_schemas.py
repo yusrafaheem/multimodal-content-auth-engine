@@ -59,6 +59,13 @@ class DetectorResultRequiredFieldsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(score=0.5, method="test")
 
+    def test_missing_method_is_rejected(self):
+        # method has no default either -- the pipeline and API responses
+        # rely on it (e.g. "heuristic_ela_noise_residual") to explain which
+        # code path produced a given score, so it can't silently be absent.
+        with self.assertRaises(ValidationError):
+            DetectorResult(score=0.5, label="authentic")
+
     def test_details_default_is_a_fresh_dict_per_instance_not_a_shared_one(self):
         # Same class of bug as app/config.py's `weights` field (see
         # test_config.py) -- if `details` were declared as a plain `= {}`
