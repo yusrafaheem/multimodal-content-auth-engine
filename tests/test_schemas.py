@@ -52,5 +52,27 @@ class DetectorResultRequiredFieldsTests(unittest.TestCase):
         self.assertNotIn("leaked", b.details)
 
 
+class UnifiedVerdictTests(unittest.TestCase):
+    def _detector_result(self, score=0.8):
+        return DetectorResult(score=score, label="authentic", method="test")
+
+    def test_nested_detector_results_round_trip_through_model_dump(self):
+        # UnifiedVerdict.image/text/metadata are typed as Optional[DetectorResult]
+        # -- confirms model_dump() recurses into those nested models rather
+        # than e.g. leaving them as DetectorResult objects or dropping them,
+        # since the API layer relies on this to produce a plain-JSON response.
+        verdict = UnifiedVerdict(
+            verdict="suspicious",
+            unified_score=0.5,
+            image=self._detector_result(0.4),
+            metadata=self._detector_result(0.9),
+            explanation="image signal: suspicious",
+        )
+        dumped = verdict.model_dump()
+        self.assertEqual(dumped["image"]["score"], 0.4)
+        self.assertEqual(dumped["metadata"]["score"], 0.9)
+        self.assertIsNone(dumped["text"])
+
+
 if __name__ == "__main__":
     unittest.main()
