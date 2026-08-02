@@ -74,5 +74,17 @@ class UnifiedVerdictTests(unittest.TestCase):
         self.assertIsNone(dumped["text"])
 
 
+class HealthResponseTests(unittest.TestCase):
+    def test_pydantic_v2_lax_mode_coerces_common_boolean_like_strings(self):
+        # Not a choice this codebase made deliberately -- it's Pydantic v2's
+        # default (non-strict) behavior for a plain `bool` field: certain
+        # string values are coerced rather than rejected. Worth pinning
+        # down explicitly, because it means use_pretrained_models="false"
+        # arriving from, say, a query string or an env-derived dict would
+        # silently become the Python bool False rather than raising.
+        health = HealthResponse(status="ok", use_pretrained_models="false")
+        self.assertIs(health.use_pretrained_models, False)
+
+
 if __name__ == "__main__":
     unittest.main()
