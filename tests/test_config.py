@@ -86,6 +86,17 @@ class SettingsEnvVarParsingTests(unittest.TestCase):
         s = _settings_reimported_with_env(USE_PRETRAINED_MODELS="FALSE")
         self.assertTrue(s.use_pretrained_models)
 
+    def test_setting_the_env_var_after_import_does_NOT_retroactively_change_defaults(self):
+        # This is the payoff test for the module docstring's claim:
+        # changing os.environ without reloading app.config must NOT affect
+        # the already-imported module's Settings default.
+        os.environ["SUSPICIOUS_THRESHOLD"] = "0.99"
+        try:
+            self.assertNotEqual(config_module.Settings().suspicious_threshold, 0.99)
+            self.assertEqual(config_module.Settings().suspicious_threshold, 0.6)
+        finally:
+            del os.environ["SUSPICIOUS_THRESHOLD"]
+
 
 if __name__ == "__main__":
     unittest.main()
