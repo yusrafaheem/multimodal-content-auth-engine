@@ -44,6 +44,15 @@ class HealthEndpointTests(unittest.TestCase):
         self.assertEqual(body["status"], "ok")
         self.assertIsInstance(body["use_pretrained_models"], bool)
 
+    def test_cors_header_is_present_for_a_cross_origin_request(self):
+        # The API is meant to be called from a browser-based client on a
+        # different origin -- if CORSMiddleware were ever removed or
+        # misconfigured, a cross-origin caller would get a silently-blocked
+        # request in the browser (CORS failures don't show up as an HTTP
+        # error status; the response has to be inspected for the header).
+        resp = client.get("/health", headers={"origin": "https://example.com"})
+        self.assertEqual(resp.headers.get("access-control-allow-origin"), "*")
+
 
 if __name__ == "__main__":
     unittest.main()
