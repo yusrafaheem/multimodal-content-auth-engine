@@ -68,6 +68,14 @@ class ImageEndpointTests(unittest.TestCase):
         self.assertGreaterEqual(body["score"], 0.6)
         self.assertEqual(body["method"], "heuristic_ela_noise_residual")
 
+    def test_missing_file_is_a_422_not_a_500(self):
+        # FastAPI's own request validation should reject this before any
+        # application code runs -- a required UploadFile parameter with no
+        # matching multipart part is a client error (422), not something
+        # that should reach the route handler and blow up as a 500.
+        resp = client.post("/v1/authenticate/image")
+        self.assertEqual(resp.status_code, 422)
+
 
 if __name__ == "__main__":
     unittest.main()
