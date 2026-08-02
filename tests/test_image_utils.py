@@ -15,7 +15,8 @@ import unittest
 
 from PIL import Image
 
-from app.utils.image_utils import load_image, to_numpy
+from app.utils.image_utils import error_level_analysis, load_image, to_numpy
+from benchmarking.attack_fixtures import make_adversarial_fixture, make_clean_fixture, make_splice_fixture
 
 
 def _solid_color_image(size=(64, 64), color=(120, 130, 140)):
@@ -43,6 +44,15 @@ class ToNumpyTests(unittest.TestCase):
         img = _solid_color_image(size=(50, 30))  # PIL size is (width, height)
         arr = to_numpy(img)
         self.assertEqual(arr.shape, (30, 50, 3))
+
+
+class ErrorLevelAnalysisTests(unittest.TestCase):
+    def test_anomaly_score_is_always_within_zero_one(self):
+        for fixture_fn in (make_clean_fixture, make_adversarial_fixture, make_splice_fixture):
+            img = load_image(fixture_fn(seed=11).image_bytes)
+            _, anomaly = error_level_analysis(img)
+            self.assertGreaterEqual(anomaly, 0.0)
+            self.assertLessEqual(anomaly, 1.0)
 
 
 if __name__ == "__main__":
