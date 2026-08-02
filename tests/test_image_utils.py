@@ -62,6 +62,13 @@ class ErrorLevelAnalysisTests(unittest.TestCase):
         _, anomaly = error_level_analysis(flat)
         self.assertLess(anomaly, 0.1)
 
+    def test_spliced_image_scores_higher_than_the_clean_image_it_was_built_from(self):
+        clean = load_image(make_clean_fixture(seed=11).image_bytes)
+        spliced = load_image(make_splice_fixture(seed=11).image_bytes)
+        _, clean_anomaly = error_level_analysis(clean)
+        _, splice_anomaly = error_level_analysis(spliced)
+        self.assertGreater(splice_anomaly, clean_anomaly)
+
 
 if __name__ == "__main__":
     unittest.main()
