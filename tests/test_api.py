@@ -92,6 +92,16 @@ class MetadataEndpointTests(unittest.TestCase):
         self.assertLess(body["score"], 0.6)
         self.assertIn("modify_date_before_original_date", body["details"]["findings"])
 
+    def test_clean_metadata_is_labeled_consistent(self):
+        # The negative-control counterpart to the spoofed-metadata test
+        # above, run through the same HTTP route -- a fixture with no EXIF
+        # red flags should come back "consistent", not just "not
+        # spoofed"/anything-but-spoofed. Pins down the actual label string
+        # the API contract promises for the clean case.
+        fixture = make_clean_fixture(seed=21)
+        resp = client.post("/v1/authenticate/metadata", files=_upload(fixture))
+        self.assertEqual(resp.json()["label"], "consistent")
+
 
 class FullPipelineEndpointTests(unittest.TestCase):
     def test_caption_is_optional_and_text_is_null_when_omitted(self):
