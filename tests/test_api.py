@@ -93,5 +93,20 @@ class MetadataEndpointTests(unittest.TestCase):
         self.assertIn("modify_date_before_original_date", body["details"]["findings"])
 
 
+class FullPipelineEndpointTests(unittest.TestCase):
+    def test_caption_is_optional_and_text_is_null_when_omitted(self):
+        # /v1/authenticate's `caption` form field is declared Optional --
+        # confirms it's genuinely optional at the HTTP layer (not just
+        # "happens to work if you remember to send it"), and that skipping
+        # it produces text: null in the response rather than a validation
+        # error or a fabricated result.
+        fixture = make_clean_fixture(seed=24)
+        resp = client.post("/v1/authenticate", files=_upload(fixture))
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertIsNone(body["text"])
+        self.assertIsNotNone(body["image"])
+
+
 if __name__ == "__main__":
     unittest.main()
