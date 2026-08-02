@@ -97,6 +97,16 @@ class SettingsEnvVarParsingTests(unittest.TestCase):
         finally:
             del os.environ["SUSPICIOUS_THRESHOLD"]
 
+    def test_a_non_numeric_threshold_env_var_raises_at_import_time_not_at_first_use(self):
+        # suspicious_threshold's default is float(os.getenv(...)) -- that
+        # float() call runs while the class body executes, so a bad value
+        # blows up the *import*/reload itself with a ValueError, not later
+        # when someone happens to read settings.suspicious_threshold. A
+        # misconfigured deployment would fail loudly and immediately, not
+        # produce a confusing error somewhere downstream.
+        with self.assertRaises(ValueError):
+            _settings_reimported_with_env(SUSPICIOUS_THRESHOLD="not-a-number")
+
 
 if __name__ == "__main__":
     unittest.main()
