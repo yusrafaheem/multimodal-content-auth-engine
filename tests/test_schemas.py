@@ -66,6 +66,14 @@ class DetectorResultRequiredFieldsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(score=0.5, label="authentic")
 
+    def test_missing_score_is_rejected_even_though_other_fields_are_present(self):
+        # Guards against a validator that's only wired up correctly for
+        # label/method and quietly treats score as optional -- score is the
+        # one field every downstream consumer (fusion weights, threshold
+        # comparisons) absolutely cannot do without.
+        with self.assertRaises(ValidationError):
+            DetectorResult(label="authentic", method="test")
+
     def test_details_default_is_a_fresh_dict_per_instance_not_a_shared_one(self):
         # Same class of bug as app/config.py's `weights` field (see
         # test_config.py) -- if `details` were declared as a plain `= {}`
