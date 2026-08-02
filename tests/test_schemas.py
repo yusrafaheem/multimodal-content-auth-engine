@@ -41,6 +41,14 @@ class DetectorResultScoreBoundsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(score=1.0001, label="authentic", method="test")
 
+    def test_score_far_out_of_range_is_rejected_the_same_way_as_barely_out_of_range(self):
+        # Guards against an implementation that only checks "obviously
+        # wrong" values (e.g. a wildly out-of-range 999.0) but has a bug in
+        # the boundary check itself -- both should raise the same
+        # ValidationError, not just the extreme case.
+        with self.assertRaises(ValidationError):
+            DetectorResult(score=999.0, label="authentic", method="test")
+
 
 class DetectorResultRequiredFieldsTests(unittest.TestCase):
     def test_missing_label_is_rejected(self):
