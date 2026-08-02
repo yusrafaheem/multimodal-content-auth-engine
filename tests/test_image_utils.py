@@ -54,6 +54,14 @@ class ErrorLevelAnalysisTests(unittest.TestCase):
             self.assertGreaterEqual(anomaly, 0.0)
             self.assertLessEqual(anomaly, 1.0)
 
+    def test_a_flat_solid_color_image_has_near_zero_anomaly(self):
+        # No edges or texture at all -- JPEG re-compression of a flat color
+        # produces almost no error anywhere, so there's no "hot spot" for
+        # ELA's percentile-vs-median ratio to catch.
+        flat = _solid_color_image(size=(128, 128))
+        _, anomaly = error_level_analysis(flat)
+        self.assertLess(anomaly, 0.1)
+
 
 if __name__ == "__main__":
     unittest.main()
