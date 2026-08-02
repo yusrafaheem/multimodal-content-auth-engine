@@ -13,9 +13,10 @@ most dependency-free files in the whole suite to run.
 import io
 import unittest
 
+import numpy as np
 from PIL import Image
 
-from app.utils.image_utils import error_level_analysis, load_image, to_numpy
+from app.utils.image_utils import error_level_analysis, load_image, noise_residual_score, to_numpy
 from benchmarking.attack_fixtures import make_adversarial_fixture, make_clean_fixture, make_splice_fixture
 
 
@@ -68,6 +69,19 @@ class ErrorLevelAnalysisTests(unittest.TestCase):
         _, clean_anomaly = error_level_analysis(clean)
         _, splice_anomaly = error_level_analysis(spliced)
         self.assertGreater(splice_anomaly, clean_anomaly)
+
+
+class NoiseResidualScoreTests(unittest.TestCase):
+    def test_score_is_always_within_zero_one_including_on_pure_random_noise(self):
+        # Pure random noise is the adversarial case for this function's own
+        # clipping logic -- maximally high-frequency content, the input most
+        # likely to blow past an un-clamped ratio.
+        rng = np.random.default_rng(0)
+        noisy_arr = rng.integers(0, 256, size=(64, 64, 3), dtype=np.uint8)
+        noisy_img = Image.fromarray(noisy_arr, mode="RGB")
+        score = noise_residual_score(noisy_img)
+        self.assertGreaterEqual(score, 0.0)
+        self.assertLessEqual(score, 1.0)
 
 
 if __name__ == "__main__":
