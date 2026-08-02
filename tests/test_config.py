@@ -51,6 +51,15 @@ class SettingsDefaultsTests(unittest.TestCase):
         s = _settings_reimported_with_env(USE_PRETRAINED_MODELS=None)
         self.assertTrue(s.use_pretrained_models)
 
+    def test_suspicious_threshold_is_always_greater_than_fake_threshold(self):
+        # The pipeline's three-way verdict (authentic / suspicious /
+        # likely_fake) silently breaks if this invariant is ever violated --
+        # e.g. a misconfigured deployment setting FAKE_THRESHOLD above
+        # SUSPICIOUS_THRESHOLD would make "suspicious" unreachable.
+        # Documenting it as an explicit, checked assumption.
+        s = config_module.Settings()
+        self.assertGreater(s.suspicious_threshold, s.fake_threshold)
+
 
 if __name__ == "__main__":
     unittest.main()
