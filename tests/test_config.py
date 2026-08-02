@@ -75,5 +75,17 @@ class SettingsMutableDefaultTests(unittest.TestCase):
         self.assertEqual(b.weights["image"], 0.5)
 
 
+class SettingsEnvVarParsingTests(unittest.TestCase):
+    def test_use_pretrained_models_is_NOT_recognized_when_env_is_uppercase_FALSE(self):
+        # A real gotcha, not a hypothetical: the falsy-string check is
+        # `not in ("0", "false", "False")` -- only two capitalization
+        # variants are covered. "FALSE" (all caps) is NOT one of them, so
+        # it's treated as truthy. Anyone setting USE_PRETRAINED_MODELS=FALSE
+        # in a .env file or a shell export would silently get the opposite
+        # of what they asked for. Documented here as current, real behavior.
+        s = _settings_reimported_with_env(USE_PRETRAINED_MODELS="FALSE")
+        self.assertTrue(s.use_pretrained_models)
+
+
 if __name__ == "__main__":
     unittest.main()
