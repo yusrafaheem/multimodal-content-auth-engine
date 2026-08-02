@@ -118,6 +118,21 @@ class FullPipelineEndpointTests(unittest.TestCase):
         self.assertIsNotNone(body["image"])
 
 
+class TextEndpointTests(unittest.TestCase):
+    def test_valid_text_form_field_returns_a_heuristic_result(self):
+        # /v1/authenticate/text takes a plain form field, not a file upload
+        # -- a genuinely different FastAPI parameter type (Form(...) vs
+        # UploadFile) than every other route this file tests, worth
+        # confirming works over real HTTP.
+        resp = client.post("/v1/authenticate/text", data={"text": (
+            "Morning fog rolled off the lake while a lone heron picked its "
+            "way along the reeds, unhurried, as if the whole marsh belonged "
+            "to it alone."
+        )})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["method"], "heuristic_text_stats")
+
+
 class GarbageInputTests(unittest.TestCase):
     """None of the three single-modality endpoints wrap `load_image()` in a
     try/except -- a genuinely corrupt/non-image upload will raise
