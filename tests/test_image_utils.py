@@ -83,6 +83,13 @@ class NoiseResidualScoreTests(unittest.TestCase):
         self.assertGreaterEqual(score, 0.0)
         self.assertLessEqual(score, 1.0)
 
+    def test_adversarial_fixture_scores_higher_than_its_clean_counterpart(self):
+        clean = load_image(make_clean_fixture(seed=13).image_bytes)
+        adversarial = load_image(make_adversarial_fixture(seed=13).image_bytes)
+        clean_score = noise_residual_score(clean)
+        adversarial_score = noise_residual_score(adversarial)
+        self.assertGreater(adversarial_score, clean_score)
+
 
 if __name__ == "__main__":
     unittest.main()
