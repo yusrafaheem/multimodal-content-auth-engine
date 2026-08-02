@@ -144,6 +144,13 @@ class HealthResponseTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             HealthResponse(status="ok")
 
+    def test_accepts_a_real_bool(self):
+        # The straightforward baseline the lax-coercion test below contrasts
+        # with: a genuine Python bool should round-trip through the model
+        # unchanged, with `is` identity (not just equality) preserved.
+        health = HealthResponse(status="ok", use_pretrained_models=False)
+        self.assertIs(health.use_pretrained_models, False)
+
     def test_pydantic_v2_lax_mode_coerces_common_boolean_like_strings(self):
         # Not a choice this codebase made deliberately -- it's Pydantic v2's
         # default (non-strict) behavior for a plain `bool` field: certain
