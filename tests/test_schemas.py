@@ -74,6 +74,14 @@ class DetectorResultRequiredFieldsTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             DetectorResult(label="authentic", method="test")
 
+    def test_details_defaults_to_an_empty_dict_when_omitted(self):
+        # The baseline this file's other `details` test builds on: omitting
+        # it entirely should give back {}, not None or a missing attribute
+        # -- callers reading result.details["some_key"] shouldn't need a
+        # None-check first.
+        result = DetectorResult(score=0.5, label="uncertain", method="test")
+        self.assertEqual(result.details, {})
+
     def test_details_default_is_a_fresh_dict_per_instance_not_a_shared_one(self):
         # Same class of bug as app/config.py's `weights` field (see
         # test_config.py) -- if `details` were declared as a plain `= {}`
