@@ -31,5 +31,15 @@ class DetectorResultScoreBoundsTests(unittest.TestCase):
             DetectorResult(score=1.0001, label="authentic", method="test")
 
 
+class DetectorResultRequiredFieldsTests(unittest.TestCase):
+    def test_missing_label_is_rejected(self):
+        # label has no default -- omitting it should be a validation error,
+        # not a silently-None field, since downstream code (the pipeline's
+        # explanation string, the API response) assumes label is always a
+        # real string.
+        with self.assertRaises(ValidationError):
+            DetectorResult(score=0.5, method="test")
+
+
 if __name__ == "__main__":
     unittest.main()
