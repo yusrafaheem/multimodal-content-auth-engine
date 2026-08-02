@@ -108,5 +108,26 @@ class FullPipelineEndpointTests(unittest.TestCase):
         self.assertIsNotNone(body["image"])
 
 
+class GarbageInputTests(unittest.TestCase):
+    """None of the three single-modality endpoints wrap `load_image()` in a
+    try/except -- a genuinely corrupt/non-image upload will raise
+    PIL.UnidentifiedImageError, which FastAPI has no handler registered for,
+    so it becomes an unhandled 500. Documenting that as current, real
+    behavior (not something this test file silently papers over) rather
+    than assuming input is always well-formed.
+    """
+
+    def test_non_image_bytes_uploaded_as_a_file_produce_a_500_not_a_crash_or_a_fake_200(self):
+        # raise_server_exceptions=False on the module-level client is what
+        # makes this observable at all -- without it, TestClient re-raises
+        # the UnidentifiedImageError into this test process instead of
+        # returning the 500 response a real HTTP client would actually see.
+        resp = client.post(
+            "/v1/authenticate/image",
+            files={"file": ("not_a_photo.jpg", b"this is definitely not image data", "image/jpeg")},
+        )
+        self.assertEqual(resp.status_code, 500)
+
+
 if __name__ == "__main__":
     unittest.main()
