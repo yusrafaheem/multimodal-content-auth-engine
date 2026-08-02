@@ -15,7 +15,11 @@ import unittest
 
 from PIL import Image
 
-from app.utils.image_utils import load_image
+from app.utils.image_utils import load_image, to_numpy
+
+
+def _solid_color_image(size=(64, 64), color=(120, 130, 140)):
+    return Image.new("RGB", size, color=color)
 
 
 class LoadImageTests(unittest.TestCase):
@@ -32,6 +36,13 @@ class LoadImageTests(unittest.TestCase):
         # as if it were a real (blank/black) photo.
         with self.assertRaises(Exception):
             load_image(b"this is not an image, just some text bytes")
+
+
+class ToNumpyTests(unittest.TestCase):
+    def test_shape_matches_image_dimensions_height_width_channels(self):
+        img = _solid_color_image(size=(50, 30))  # PIL size is (width, height)
+        arr = to_numpy(img)
+        self.assertEqual(arr.shape, (30, 50, 3))
 
 
 if __name__ == "__main__":
