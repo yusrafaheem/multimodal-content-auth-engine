@@ -20,6 +20,13 @@ from app.schemas import DetectorResult, HealthResponse, UnifiedVerdict
 
 
 class DetectorResultScoreBoundsTests(unittest.TestCase):
+    def test_score_of_exactly_zero_is_accepted(self):
+        # The boundary itself must NOT be rejected -- ge=0.0 means zero is
+        # inclusive. A validator that used a strict `>` internally instead
+        # of `>=` would reject this legitimate value.
+        result = DetectorResult(score=0.0, label="likely_manipulated", method="test")
+        self.assertEqual(result.score, 0.0)
+
     def test_score_below_zero_is_rejected(self):
         # score: float = Field(..., ge=0.0, le=1.0) -- Pydantic v2 enforces
         # this constraint at construction time, not just in documentation.
